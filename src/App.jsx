@@ -1,0 +1,132 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/auth/Login';
+import SuperAdminLayout from './layouts/SuperAdminLayout';
+import CompanyAdminLayout from './layouts/CompanyAdminLayout';
+import ProjectTeamLayout from './layouts/ProjectTeamLayout';
+import ClientPortalLayout from './layouts/ClientPortalLayout';
+import { useAuth } from './context/AuthContext';
+import ComingSoon from './components/ComingSoon';
+
+// Import Real Pages
+import SuperAdminDashboard from './pages/super-admin/Dashboard';
+import SuperAdminCompanies from './pages/super-admin/Companies';
+import SuperAdminSubscriptions from './pages/super-admin/Subscriptions';
+import SuperAdminTickets from './pages/super-admin/SupportTickets';
+import SuperAdminSettings from './pages/super-admin/Settings';
+
+import CompanyAdminDashboard from './pages/company-admin/Dashboard';
+import Projects from './pages/company-admin/Projects';
+import ProjectDetails from './pages/company-admin/ProjectDetails';
+import Team from './pages/company-admin/Team';
+import Schedule from './pages/company-admin/Schedule';
+import Photos from './pages/company-admin/Photos';
+import Drawings from './pages/company-admin/Drawings';
+import Issues from './pages/company-admin/Issues';
+import Estimates from './pages/company-admin/Estimates';
+import Chat from './pages/company-admin/Chat';
+import Settings from './pages/company-admin/Settings';
+import ProjectTeamHome from './pages/project-team/Home';
+import UploadPage from './pages/project-team/Upload';
+import ClientPortalDashboard from './pages/client-portal/Dashboard';
+
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white">Loading Construction OS...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Navigate to="/login" />} />
+
+      {/* Super Admin Routes */}
+      <Route
+        path="/super-admin"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <SuperAdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<SuperAdminDashboard />} />
+        <Route path="companies" element={<SuperAdminCompanies />} />
+        <Route path="subscriptions" element={<SuperAdminSubscriptions />} />
+        <Route path="tickets" element={<SuperAdminTickets />} />
+        <Route path="settings" element={<SuperAdminSettings />} />
+        <Route path="*" element={<ComingSoon title="Super Admin Module" />} />
+      </Route>
+
+      {/* Company Admin Routes */}
+      <Route
+        path="/company-admin"
+        element={
+          <ProtectedRoute allowedRoles={['company_admin']}>
+            <CompanyAdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<CompanyAdminDashboard />} />
+        <Route path="projects" element={<Projects />} />
+        <Route path="projects/:id" element={<ProjectDetails />} />
+        <Route path="team" element={<Team />} />
+
+        <Route path="schedule" element={<Schedule />} />
+        <Route path="photos" element={<Photos />} />
+        <Route path="drawings" element={<Drawings />} />
+        <Route path="issues" element={<Issues />} />
+        <Route path="estimates" element={<Estimates />} />
+        <Route path="chat" element={<Chat />} />
+        <Route path="settings" element={<Settings />} />
+
+        <Route path="*" element={<ComingSoon title="Module Not Found" />} />
+      </Route>
+
+      {/* Project Team Routes */}
+      <Route
+        path="/project-team"
+        element={
+          <ProtectedRoute allowedRoles={['project_manager', 'foreman', 'worker']}>
+            <ProjectTeamLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<ProjectTeamHome />} />
+        <Route path="upload" element={<UploadPage />} />
+
+        <Route path="tasks" element={<ComingSoon title="My Tasks" description="View and manage your assigned tasks." />} />
+        <Route path="chat" element={<ComingSoon title="Team Chat" description="Communicate with your team in real-time." />} />
+        <Route path="files" element={<ComingSoon title="Project Files" description="Access important project documents on the go." />} />
+        <Route path="profile" element={<ComingSoon title="User Profile" description="Manage your account settings and preferences." />} />
+      </Route>
+
+      {/* Client Portal Routes */}
+      <Route
+        path="/client-portal"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientPortalLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<ClientPortalDashboard />} />
+
+        <Route path="timeline" element={<ComingSoon title="Project Timeline" description="View the progress of your project." />} />
+        <Route path="photos" element={<ComingSoon title="Project Photos" description="See the latest photos from the construction site." />} />
+        <Route path="approvals" element={<ComingSoon title="Pending Approvals" description="Review and approve important project items." />} />
+        <Route path="invoices" element={<ComingSoon title="Invoices" description="View and pay your project invoices." />} />
+        <Route path="messages" element={<ComingSoon title="Messages" description="Communicate with the project team." />} />
+      </Route>
+
+    </Routes>
+  );
+}
+
+export default App;
