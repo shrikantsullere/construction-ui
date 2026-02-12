@@ -1,57 +1,175 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { PieChart, Clock, Image, FileCheck, DollarSign, MessageCircle, LogOut } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import {
+  PieChart, Clock, Image, FileCheck, DollarSign,
+  MessageCircle, LogOut, Menu, X, Bell, User,
+  Building2, LayoutDashboard
+} from 'lucide-react';
 
 const ClientPortalLayout = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  // Close sidebar on route change
+  useEffect(() => {
+    setIsSidebarOpen(false);
+    setIsProfileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Click outside to close profile menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const navItems = [
+    { icon: LayoutDashboard, label: 'Overview', path: '/client-portal' },
+    { icon: Clock, label: 'Timeline', path: '/client-portal/timeline' },
+    { icon: Image, label: 'Photos', path: '/client-portal/photos' },
+    { icon: FileCheck, label: 'Approvals', path: '/client-portal/approvals' },
+    { icon: DollarSign, label: 'Invoices', path: '/client-portal/invoices' },
+    { icon: MessageCircle, label: 'Messages', path: '/client-portal/messages' },
+  ];
+
+  const getHeaderTitle = () => {
+    const currentItem = navItems.find(item => item.path === location.pathname);
+    return currentItem ? currentItem.label : 'Client Portal';
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      {/* Client Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-            C
-          </div>
+    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed md:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white flex flex-col shadow-xl transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        <div className="p-6 border-b border-slate-700 flex justify-between items-center">
           <div>
-            <h1 className="font-bold text-slate-800">Client Portal</h1>
-            <p className="text-xs text-slate-500">View Only Access</p>
+            <h1 className="text-xl font-bold flex items-center gap-2 text-blue-400">
+              <Building2 className="w-6 h-6" />
+              ConstructOS
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">Client Portal</p>
           </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
+            <X size={24} />
+          </button>
         </div>
-        <button onClick={() => logout()} className="flex items-center gap-2 text-slate-600 hover:text-red-500 transition text-sm font-medium">
-          <LogOut size={18} /> Sign Out
-        </button>
-      </header>
 
-      <div className="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.label}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium
+                  ${isActive
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }
+                `}
+              >
+                <item.icon size={18} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
 
-        {/* Sidebar Menu for Client */}
-        <aside className="hidden lg:block lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4 h-fit sticky top-6">
-          <nav className="space-y-1">
-            <Link to="/client-portal" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium">
-              <PieChart size={20} /> Project Overview
-            </Link>
-            <Link to="/client-portal/timeline" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">
-              <Clock size={20} /> Timeline
-            </Link>
-            <Link to="/client-portal/photos" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">
-              <Image size={20} /> Photos
-            </Link>
-            <Link to="/client-portal/approvals" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">
-              <FileCheck size={20} /> Approvals
-            </Link>
-            <Link to="/client-portal/invoices" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">
-              <DollarSign size={20} /> Invoices
-            </Link>
-            <Link to="/client-portal/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition font-medium">
-              <MessageCircle size={20} /> Messages
-            </Link>
-          </nav>
-        </aside>
+        <div className="p-4 border-t border-slate-700">
+          <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2 text-red-400 hover:bg-slate-800 rounded-lg transition text-sm">
+            <LogOut size={18} /> Logout
+          </button>
+        </div>
+      </aside>
 
-        {/* Main Content */}
-        <main className="lg:col-span-3">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm z-10 shrink-0">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden text-slate-600 hover:text-slate-900"
+            >
+              <Menu size={24} />
+            </button>
+            <h2 className="text-lg font-semibold text-slate-800">{getHeaderTitle()}</h2>
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-4 relative" ref={profileMenuRef}>
+            {/* Notifications */}
+            <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg relative hidden sm:block">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+
+            {/* Profile */}
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition"
+            >
+              <div className="text-right hidden sm:block">
+                <div className="text-sm font-medium text-slate-900">{user?.name || 'Client User'}</div>
+                <div className="text-xs text-slate-500">Project Stakeholder</div>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
+                {(user?.name || 'C U').split(' ').map(n => n[0]).join('')}
+              </div>
+            </button>
+
+            {/* Profile Dropdown */}
+            {isProfileMenuOpen && (
+              <div className="absolute top-16 right-0 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-fade-in">
+                <div className="px-4 py-3 border-b border-slate-100 sm:hidden">
+                  <p className="text-sm font-medium text-slate-900">{user?.name || 'Client User'}</p>
+                </div>
+                <button
+                  onClick={() => { setIsProfileMenuOpen(false); }}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <User size={16} /> My Account
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Dynamic Content */}
+        <main className="flex-1 overflow-auto p-4 md:p-8 bg-slate-50 scroll-smooth">
           <Outlet />
         </main>
       </div>
@@ -60,3 +178,4 @@ const ClientPortalLayout = () => {
 };
 
 export default ClientPortalLayout;
+

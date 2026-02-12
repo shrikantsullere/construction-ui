@@ -27,12 +27,15 @@ import Chat from './pages/company-admin/Chat';
 import Settings from './pages/company-admin/Settings';
 import ProjectTeamHome from './pages/project-team/Home';
 import UploadPage from './pages/project-team/Upload';
+import TasksPage from './pages/project-team/Tasks';
+import ProjectTeamChat from './pages/project-team/Chat';
+import ProjectTeamProfile from './pages/project-team/Profile';
 import ClientPortalDashboard from './pages/client-portal/Dashboard';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white">Loading Construction OS...</div>;
+  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white font-black tracking-widest uppercase animate-pulse">Constructing...</div>;
   if (!user) return <Navigate to="/login" />;
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/login" />;
@@ -100,11 +103,10 @@ function App() {
       >
         <Route index element={<ProjectTeamHome />} />
         <Route path="upload" element={<UploadPage />} />
-
-        <Route path="tasks" element={<ComingSoon title="My Tasks" description="View and manage your assigned tasks." />} />
-        <Route path="chat" element={<ComingSoon title="Team Chat" description="Communicate with your team in real-time." />} />
+        <Route path="tasks" element={<TasksPage />} />
+        <Route path="chat" element={<ProjectTeamChat />} />
+        <Route path="profile" element={<ProjectTeamProfile />} />
         <Route path="files" element={<ComingSoon title="Project Files" description="Access important project documents on the go." />} />
-        <Route path="profile" element={<ComingSoon title="User Profile" description="Manage your account settings and preferences." />} />
       </Route>
 
       {/* Client Portal Routes */}
