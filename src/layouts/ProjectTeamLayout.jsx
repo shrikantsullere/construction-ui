@@ -136,7 +136,7 @@ const ProjectTeamLayout = () => {
             </button>
             <h2 className="text-lg font-semibold text-slate-800">{getHeaderTitle()}</h2>
           </div>
-          
+
           <div className="flex items-center gap-2 md:gap-4 relative" ref={profileMenuRef}>
             {/* Notifications */}
             <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg relative hidden sm:block">
