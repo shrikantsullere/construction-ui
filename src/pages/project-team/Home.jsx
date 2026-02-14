@@ -22,13 +22,95 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
 
 const ProjectTeamHome = () => {
   const { user } = useAuth();
-  const [clockedIn, setClockedIn] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Initialize state from local storage to persist data across reloads
+  const [clockedIn, setClockedIn] = useState(() => {
+    return localStorage.getItem('project_team_clocked_in') === 'true';
+  });
+
+  const [sessionData, setSessionData] = useState(() => {
+    const saved = localStorage.getItem('project_team_session');
+    return saved ? JSON.parse(saved) : { checkIn: null, checkOut: null };
+  });
+
+  const [history, setHistory] = useState(() => {
+    const saved = localStorage.getItem('project_team_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [workHours, setWorkHours] = useState('0.0h');
+
+  // Timer for current clock
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Calculate work hours (History + Current Session)
+  useEffect(() => {
+    const calculateHours = () => {
+      let totalHours = 0;
+
+      // Sum history duration
+      history.forEach(session => {
+        if (session.duration) totalHours += parseFloat(session.duration);
+      });
+
+      // Add current session duration
+      if (clockedIn && sessionData.checkIn) {
+        const start = new Date(sessionData.checkIn);
+        const end = new Date();
+        const diffMs = end - start;
+        const currentHours = (diffMs / (1000 * 60 * 60));
+        totalHours += currentHours;
+      }
+
+      setWorkHours(`${Math.max(0, totalHours).toFixed(1)}h`);
+    };
+
+    calculateHours();
+    // Update hours every minute if clocked in
+    const interval = setInterval(calculateHours, 60000);
+    return () => clearInterval(interval);
+  }, [sessionData, clockedIn, history]);
+
+  const handleClockAction = () => {
+    const now = new Date();
+
+    if (!clockedIn) {
+      // Clock In Logic
+      const newData = { checkIn: now.toISOString(), checkOut: null };
+      setSessionData(newData);
+      setClockedIn(true);
+
+      // Save to local storage
+      localStorage.setItem('project_team_clocked_in', 'true');
+      localStorage.setItem('project_team_session', JSON.stringify(newData));
+    } else {
+      // Clock Out Logic
+      const checkInTime = new Date(sessionData.checkIn);
+      const duration = ((now - checkInTime) / (1000 * 60 * 60)).toFixed(1);
+
+      const completedSession = {
+        checkIn: sessionData.checkIn,
+        checkOut: now.toISOString(),
+        duration: duration
+      };
+
+      const newHistory = [completedSession, ...history];
+      setHistory(newHistory);
+
+      const newData = { ...sessionData, checkOut: now.toISOString() };
+      setSessionData(newData);
+      setClockedIn(false);
+
+      // Save to local storage
+      localStorage.setItem('project_team_clocked_in', 'false');
+      localStorage.setItem('project_team_session', JSON.stringify(newData));
+      localStorage.setItem('project_team_history', JSON.stringify(newHistory));
+    }
+  };
 
   const tasks = [
     { title: 'Inspect Reinforcement', time: '08:00 AM', status: 'Completed', priority: 'High', location: 'Section B-12' },
@@ -60,7 +142,7 @@ const ProjectTeamHome = () => {
           {/* Clock In/Out Card */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
             {/* Decorative background element */}
-            <div className={`absolute top-0 left-0 w-full h-1.5 ${clockedIn ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+            <div className={`absolute top-0 left-0 w-full h-1.5 ${clockedIn ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
 
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Shift Status: {clockedIn ? 'Active' : 'Not Started'}</p>
             <h2 className="text-4xl font-black text-slate-800 mb-6 font-mono tracking-tighter">
@@ -68,14 +150,14 @@ const ProjectTeamHome = () => {
             </h2>
 
             <button
-              onClick={() => setClockedIn(!clockedIn)}
-              className={`w-36 h-36 rounded-full border-8 flex flex-col items-center justify-center transition-all transform active:scale-95 shadow-2xl mx-auto
+              onClick={handleClockAction}
+              className={`w-40 h-40 rounded-full border-8 flex flex-col items-center justify-center transition-all transform active:scale-95 shadow-2xl mx-auto
                 ${clockedIn
-                  ? 'border-red-100 bg-red-600 text-white shadow-red-200'
-                  : 'border-emerald-100 bg-emerald-600 text-white shadow-emerald-200'
+                  ? 'border-red-100 bg-red-600 text-white shadow-red-200 hover:bg-red-700'
+                  : 'border-emerald-100 bg-emerald-600 text-white shadow-emerald-200 hover:bg-emerald-700'
                 }`}
             >
-              <Timer size={32} className="mb-2" />
+              <Timer size={36} className="mb-2" />
               <span className="text-xl font-black uppercase tracking-tight">
                 {clockedIn ? 'Clock Out' : 'Clock In'}
               </span>
@@ -87,13 +169,56 @@ const ProjectTeamHome = () => {
               </p>
               <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase">Verified via GPS</span>
             </div>
+
+            {/* Session Times Display */}
+            {(sessionData.checkIn || sessionData.checkOut) && (
+              <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 text-left">
+                <div className="bg-slate-50 p-2 rounded-lg">
+                  <p className="text-[10px] uppercase text-slate-400 font-bold">Clock In</p>
+                  <p className="text-sm font-bold text-slate-700">
+                    {sessionData.checkIn ? new Date(sessionData.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded-lg">
+                  <p className="text-[10px] uppercase text-slate-400 font-bold">Clock Out</p>
+                  <p className="text-sm font-bold text-slate-700">
+                    {sessionData.checkOut ? new Date(sessionData.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Recent History Log */}
+            {history.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-100 text-left">
+                <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Recent Activity</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                  {history.map((session, index) => (
+                    <div key={index} className="flex justify-between items-center text-xs bg-slate-50 p-2 rounded border border-slate-100">
+                      <div>
+                        <span className="block font-semibold text-slate-700">
+                          {new Date(session.checkIn).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
+                        <span className="text-slate-500">
+                          {new Date(session.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
+                          {session.checkOut ? new Date(session.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                        </span>
+                      </div>
+                      <span className="font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        {session.duration}h
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
             <StatCard
               title="Work Hours"
-              value="6.5h"
+              value={workHours}
               subtext="Goal: 8.0h"
               icon={Timer}
               color="bg-indigo-500"
