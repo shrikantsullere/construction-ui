@@ -1,24 +1,6 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Calendar, MapPin, Eye, Edit, Trash2, X, Save, AlertTriangle, Upload } from 'lucide-react';
-
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-          <h3 className="font-bold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
+import { Plus, Search, Filter, Calendar, MapPin, Eye, Edit, Trash2, Save, AlertTriangle, Upload } from 'lucide-react';
+import Modal from '../../components/Modal';
 
 const Projects = () => {
   const [view, setView] = useState('grid'); // 'grid' | 'table'
@@ -127,7 +109,7 @@ const Projects = () => {
             placeholder="e.g. Sunrise Apartments"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
             <input
@@ -149,13 +131,13 @@ const Projects = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
             <select
               value={data.status}
               onChange={e => setData({ ...data, status: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition cursor-pointer"
             >
               <option>Planning</option>
               <option>In Progress</option>
@@ -180,10 +162,10 @@ const Projects = () => {
             min="0" max="100"
             value={data.progress}
             onChange={e => setData({ ...data, progress: parseInt(e.target.value) })}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
         </div>
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end pt-4 border-t border-slate-100">
           <button
             onClick={onSubmit}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-200 flex items-center gap-2"

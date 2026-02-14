@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Shield, Plus, Trash2, Edit, UserCheck, Power, LogIn, Eye } from 'lucide-react';
+import { Search, Shield, Plus, Trash2, Edit, Eye, AlertTriangle, Briefcase, Calendar, DollarSign, Users } from 'lucide-react';
 import Modal from '../../components/Modal';
 
 const Companies = () => {
@@ -12,18 +12,29 @@ const Companies = () => {
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
 
   // Form State
   const [formData, setFormData] = useState({ name: '', plan: 'Starter', users: 1, status: 'Active', renewal: '', revenue: 0 });
   const [editingId, setEditingId] = useState(null);
+  const [viewingCompany, setViewingCompany] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Filter Logic
   const filteredCompanies = companies.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterStatus === 'All' || c.status === filterStatus)
   );
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData({ name: '', plan: 'Starter', users: 1, status: 'Active', renewal: '', revenue: 0 });
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -41,36 +52,26 @@ const Companies = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (confirm('Are you sure you want to delete this company?')) {
-      setCompanies(companies.filter(c => c.id !== id));
-    }
+  const handleDeleteClick = (id) => {
+    setDeletingId(id);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleImpersonate = (company) => {
-    alert(`Impersonating ${company.name} admin...`);
+  const confirmDelete = () => {
+    setCompanies(companies.filter(c => c.id !== deletingId));
+    setIsDeleteModalOpen(false);
+    setDeletingId(null);
   };
-
-  const handleToggleStatus = (company) => {
-    const newStatus = company.status === 'Active' ? 'Suspended' : 'Active';
-    if (confirm(`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'suspend'} ${company.name}?`)) {
-      setCompanies(companies.map(c => c.id === company.id ? { ...c, status: newStatus } : c));
-    }
-  }
 
   const handleView = (company) => {
-    alert(`Viewing details for ${company.name}`);
+    setViewingCompany(company);
+    setIsViewModalOpen(true);
   }
 
   const openAddModal = () => {
     setEditingId(null);
     setFormData({ name: '', plan: 'Starter', users: 1, status: 'Active', renewal: new Date().toISOString().split('T')[0], revenue: 0 });
     setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingId(null);
   };
 
   return (
@@ -81,7 +82,7 @@ const Companies = () => {
           <p className="text-slate-500 text-sm">Overview of all registered construction companies.</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={openAddModal} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-500/20 font-medium">
+          <button onClick={openAddModal} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-500/20 font-medium transition active:scale-95">
             <Plus size={18} /> Add Company
           </button>
         </div>
@@ -103,7 +104,7 @@ const Companies = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           >
             <option value="All">All Status</option>
             <option value="Active">Active</option>
@@ -130,10 +131,10 @@ const Companies = () => {
             <tbody className="divide-y divide-slate-100">
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
-                  <tr key={company.id} className="hover:bg-slate-50 transition">
+                  <tr key={company.id} className="hover:bg-slate-50 transition group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200 group-hover:bg-white group-hover:border-blue-200 group-hover:text-blue-600 transition">
                           {company.name.charAt(0)}
                         </div>
                         <div>
@@ -183,7 +184,7 @@ const Companies = () => {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(company.id)}
+                          onClick={() => handleDeleteClick(company.id)}
                           className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                           title="Delete"
                         >
@@ -196,7 +197,11 @@ const Companies = () => {
               ) : (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
-                    No companies found matching your filters.
+                    <div className="flex flex-col items-center justify-center">
+                      <Briefcase size={48} className="text-slate-200 mb-4" />
+                      <p className="text-lg font-medium text-slate-900">No companies found</p>
+                      <p className="text-sm text-slate-500">Try adjusting your search or filters.</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -219,7 +224,7 @@ const Companies = () => {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none transition"
               placeholder="e.g. Acme Construction"
             />
           </div>
@@ -229,7 +234,7 @@ const Companies = () => {
               <select
                 value={formData.plan}
                 onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none transition cursor-pointer"
               >
                 <option>Starter</option>
                 <option>Pro</option>
@@ -240,9 +245,10 @@ const Companies = () => {
               <label className="block text-sm font-medium text-slate-700 mb-1">Users</label>
               <input
                 type="number"
+                min="1"
                 value={formData.users}
                 onChange={(e) => setFormData({ ...formData, users: parseInt(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none transition"
               />
             </div>
           </div>
@@ -252,7 +258,7 @@ const Companies = () => {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none transition cursor-pointer"
               >
                 <option>Active</option>
                 <option>Past Due</option>
@@ -266,9 +272,10 @@ const Companies = () => {
                 <span className="absolute left-3 top-2.5 text-slate-500">$</span>
                 <input
                   type="number"
+                  min="0"
                   value={formData.revenue}
                   onChange={(e) => setFormData({ ...formData, revenue: parseInt(e.target.value) })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-2.5 py-2.5 text-slate-900 focus:border-blue-500 outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-2.5 py-2.5 text-slate-900 focus:border-blue-500 outline-none transition"
                 />
               </div>
             </div>
@@ -279,7 +286,7 @@ const Companies = () => {
               type="date"
               value={formData.renewal}
               onChange={(e) => setFormData({ ...formData, renewal: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 focus:border-blue-500 outline-none transition"
             />
           </div>
           <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
@@ -288,6 +295,81 @@ const Companies = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Confirm Deletion">
+        <div className="flex flex-col items-center justify-center p-4 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+            <AlertTriangle size={32} />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Company?</h3>
+          <p className="text-slate-500 mb-6">
+            Are you sure you want to delete this company? This action cannot be undone and will remove all associated data.
+          </p>
+          <div className="flex gap-3 w-full">
+            <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition font-medium">Cancel</button>
+            <button onClick={confirmDelete} className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition font-medium">Delete Forever</button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* View Details Modal */}
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Company Details">
+        {viewingCompany && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center text-2xl font-bold text-blue-600 border border-slate-100 shadow-sm">
+                {viewingCompany.name.charAt(0)}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">{viewingCompany.name}</h3>
+                <p className="text-slate-500 text-sm">ID: COMP-{1000 + viewingCompany.id}</p>
+              </div>
+              <div className="ml-auto">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${viewingCompany.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                  viewingCompany.status === 'Past Due' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                    'bg-red-50 text-red-600 border-red-200'
+                  }`}>
+                  {viewingCompany.status}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-2 text-slate-500 text-sm font-medium">
+                  <Shield size={16} /> Current Plan
+                </div>
+                <p className="text-lg font-bold text-slate-800">{viewingCompany.plan}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-2 text-slate-500 text-sm font-medium">
+                  <Users size={16} /> Total Users
+                </div>
+                <p className="text-lg font-bold text-slate-800">{viewingCompany.users} Members</p>
+              </div>
+              <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-2 text-slate-500 text-sm font-medium">
+                  <DollarSign size={16} /> Monthly Revenue
+                </div>
+                <p className="text-lg font-bold text-slate-800">${viewingCompany.revenue}/mo</p>
+              </div>
+              <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm">
+                <div className="flex items-center gap-2 mb-2 text-slate-500 text-sm font-medium">
+                  <Calendar size={16} /> Renewal Date
+                </div>
+                <p className="text-lg font-bold text-slate-800">{viewingCompany.renewal}</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button onClick={() => setIsViewModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition">Close</button>
+              <button onClick={() => { setIsViewModalOpen(false); handleEdit(viewingCompany); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200">Edit Company</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
     </div>
   );
 };

@@ -1,24 +1,85 @@
 import { useState } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, X, Save, AlertTriangle, Trash2, Edit, CheckCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Save, AlertTriangle, Trash2, Edit } from 'lucide-react';
+import Modal from '../../components/Modal';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-          <h3 className="font-bold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6">
-          {children}
-        </div>
+// Extracted EventForm component to prevent re-renders and focus loss
+const EventForm = ({ data, setData, onSubmit, submitLabel }) => (
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Event Title</label>
+      <input
+        type="text"
+        value={data.title}
+        onChange={e => setData({ ...data, title: e.target.value })}
+        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+        placeholder="e.g. Site Inspection"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
+      <input
+        type="text"
+        value={data.project}
+        onChange={e => setData({ ...data, project: e.target.value })}
+        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+        placeholder="e.g. Skyline Tower"
+      />
+    </div>
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Start Day (Feb)</label>
+        <input
+          type="number"
+          min="1" max="28"
+          value={data.start}
+          onChange={e => setData({ ...data, start: parseInt(e.target.value) })}
+          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">End Day (Feb)</label>
+        <input
+          type="number"
+          min={data.start} max="28"
+          value={data.end}
+          onChange={e => setData({ ...data, end: parseInt(e.target.value) })}
+          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+        />
       </div>
     </div>
-  );
-};
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Color Code</label>
+      <select
+        value={data.color}
+        onChange={e => setData({ ...data, color: e.target.value })}
+        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+      >
+        <option value="bg-blue-500">Blue</option>
+        <option value="bg-emerald-500">Emerald</option>
+        <option value="bg-orange-500">Orange</option>
+        <option value="bg-purple-500">Purple</option>
+        <option value="bg-red-500">Red</option>
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+      <textarea
+        value={data.description}
+        onChange={e => setData({ ...data, description: e.target.value })}
+        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition h-20 resize-none"
+        placeholder="Details about the event..."
+      />
+    </div>
+    <div className="flex justify-end pt-2">
+      <button
+        onClick={onSubmit}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-200 flex items-center gap-2"
+      >
+        <Save size={18} /> {submitLabel}
+      </button>
+    </div>
+  </div>
+);
 
 const Schedule = () => {
   const [currentMonth, setCurrentMonth] = useState('February 2026');
@@ -82,84 +143,6 @@ const Schedule = () => {
     setIsDeleteOpen(false);
   };
 
-  const EventForm = ({ data, setData, onSubmit, submitLabel }) => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Event Title</label>
-        <input
-          type="text"
-          value={data.title}
-          onChange={e => setData({ ...data, title: e.target.value })}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          placeholder="e.g. Site Inspection"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
-        <input
-          type="text"
-          value={data.project}
-          onChange={e => setData({ ...data, project: e.target.value })}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          placeholder="e.g. Skyline Tower"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Start Day (Feb)</label>
-          <input
-            type="number"
-            min="1" max="28"
-            value={data.start}
-            onChange={e => setData({ ...data, start: parseInt(e.target.value) })}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">End Day (Feb)</label>
-          <input
-            type="number"
-            min={data.start} max="28"
-            value={data.end}
-            onChange={e => setData({ ...data, end: parseInt(e.target.value) })}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Color Code</label>
-        <select
-          value={data.color}
-          onChange={e => setData({ ...data, color: e.target.value })}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-        >
-          <option value="bg-blue-500">Blue</option>
-          <option value="bg-emerald-500">Emerald</option>
-          <option value="bg-orange-500">Orange</option>
-          <option value="bg-purple-500">Purple</option>
-          <option value="bg-red-500">Red</option>
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-        <textarea
-          value={data.description}
-          onChange={e => setData({ ...data, description: e.target.value })}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition h-20 resize-none"
-          placeholder="Details about the event..."
-        />
-      </div>
-      <div className="flex justify-end pt-2">
-        <button
-          onClick={onSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-200 flex items-center gap-2"
-        >
-          <Save size={18} /> {submitLabel}
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
@@ -192,42 +175,53 @@ const Schedule = () => {
           </div>
         </div>
 
-        {/* Gantt / Calendar Hybrid View */}
-        <div className="overflow-x-auto pb-4 custom-scrollbar">
-          <div className="min-w-[800px]">
+        {/* CSS Grid Gantt View */}
+        <div className="overflow-x-auto pb-4">
+          <div className="min-w-[1200px] border border-slate-200 rounded-lg">
             {/* Header Row */}
-            <div className="grid grid-cols-28 gap-px bg-slate-200 border border-slate-200 rounded-t-lg">
+            <div
+              className="grid bg-slate-100 border-b border-slate-200"
+              style={{ gridTemplateColumns: `repeat(${daysInMonth}, 1fr)` }}
+            >
               {days.map(d => (
-                <div key={d} className="bg-slate-50 p-2 text-center text-xs font-semibold text-slate-600">
+                <div key={d} className="p-2 text-center text-xs font-semibold text-slate-600 border-r border-slate-200 last:border-r-0">
                   {d}
                 </div>
               ))}
             </div>
 
-            <div className="border-x border-b border-slate-200 bg-white relative h-80 rounded-b-lg">
-              {/* Grid Lines */}
-              <div className="absolute inset-0 grid grid-cols-28 pointer-events-none">
-                {days.map(d => <div key={d} className="border-r border-slate-100 h-full"></div>)}
+            {/* Events Grid */}
+            <div
+              className="relative bg-white min-h-[350px] grid pt-4"
+              style={{
+                gridTemplateColumns: `repeat(${daysInMonth}, 1fr)`,
+                gridAutoRows: '45px' // Fixed height per event row
+              }}
+            >
+              {/* Vertical Grid Lines (Background) */}
+              <div
+                className="absolute inset-0 grid pointer-events-none z-0"
+                style={{ gridTemplateColumns: `repeat(${daysInMonth}, 1fr)` }}
+              >
+                {days.map(d => <div key={d} className="border-r border-slate-100 h-full last:border-r-0"></div>)}
               </div>
 
-              {/* Events */}
-              <div className="relative pt-4 space-y-3 z-10 px-0.5">
-                {events.map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => openViewModal(event)}
-                    className={`absolute h-8 rounded-md shadow-sm ${event.color} text-white text-xs px-2 flex items-center cursor-pointer hover:brightness-110 transition-all hover:scale-[1.01] hover:shadow-md hover:z-20`}
-                    style={{
-                      left: `${((event.start - 1) / daysInMonth) * 100}%`,
-                      width: `${((event.end - event.start + 1) / daysInMonth) * 100}%`,
-                      top: `${(events.indexOf(event) * 40) + 20}px` // Simple stacking logic
-                    }}
-                    title={`${event.title} (${event.project})`}
-                  >
-                    <span className="font-bold truncate">{event.title}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Events (Foreground) */}
+              {events.map((event, index) => (
+                <div
+                  key={event.id}
+                  onClick={() => openViewModal(event)}
+                  className={`relative z-10 mx-1 h-8 rounded-md shadow-sm ${event.color} text-white text-xs px-2 flex items-center cursor-pointer hover:brightness-110 transition-all hover:scale-[1.01] hover:shadow-md`}
+                  style={{
+                    gridColumnStart: event.start,
+                    gridColumnEnd: event.end + 1,
+                    gridRowStart: index + 1 // Simple stacking, one event per row
+                  }}
+                  title={`${event.title} (${event.project})`}
+                >
+                  <span className="font-bold truncate">{event.title}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
