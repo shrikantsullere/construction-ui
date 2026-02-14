@@ -1,4 +1,4 @@
-import { Shield, Building, CreditCard, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { Shield, Building, CreditCard, Users, TrendingUp, AlertCircle, Clock, ArrowUpRight } from 'lucide-react';
 
 const DashboardCard = ({ title, value, subtext, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -24,36 +24,44 @@ const SuperAdminDashboard = () => {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Platform Overview</h1>
         <p className="text-slate-500 text-sm">Monitor all companies and system health across the ConstructOS network.</p>
+        <p className="text-xs text-blue-600 font-bold mt-1 uppercase tracking-wider">Visible to: Super Admin Only</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <DashboardCard
           title="Total Companies"
           value="124"
-          subtext="since last month"
+          subtext="Active Tenants"
           icon={Building}
           color="bg-blue-500"
         />
         <DashboardCard
           title="Active Subscriptions"
           value="118"
-          subtext="95% retention rate"
+          subtext="95% Retention"
           icon={CreditCard}
           color="bg-emerald-500"
         />
         <DashboardCard
           title="Monthly Revenue"
           value="$45.2k"
-          subtext="recurring revenue"
+          subtext="Recurring"
           icon={TrendingUp}
           color="bg-indigo-500"
         />
         <DashboardCard
-          title="Users Online"
-          value="342"
-          subtext="peak usage hours"
-          icon={Users}
+          title="Pending Tickets"
+          value="12"
+          subtext="Needs Attention"
+          icon={AlertCircle}
           color="bg-orange-500"
+        />
+        <DashboardCard
+          title="Expiring Trials"
+          value="5"
+          subtext="Next 7 Days"
+          icon={Clock}
+          color="bg-purple-500"
         />
       </div>
 
@@ -72,12 +80,12 @@ const SuperAdminDashboard = () => {
           </div>
           <div className="h-64 flex items-end justify-between gap-3 px-2">
             {[35, 42, 58, 62, 75, 80, 85, 90, 88, 95, 100, 110].map((h, i) => (
-              <div key={i} className="w-full bg-slate-50 rounded-t-lg relative group">
+              <div key={i} className="w-full bg-slate-50 rounded-t-lg relative group h-full flex items-end">
                 <div
-                  className="absolute bottom-0 w-full bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out group-hover:bg-blue-400"
+                  className="w-full bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out group-hover:bg-blue-400 relative"
                   style={{ height: `${h}%` }}
                 >
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition shadow-lg pointer-events-none">
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition shadow-lg pointer-events-none whitespace-nowrap z-10">
                     ${(h * 0.5).toFixed(1)}k
                   </div>
                 </div>
@@ -124,4 +132,3 @@ const SuperAdminDashboard = () => {
 };
 
 export default SuperAdminDashboard;
-

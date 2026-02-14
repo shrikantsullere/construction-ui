@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Shield, LayoutDashboard, Building, Users,
   CreditCard, Settings, Ticket, LogOut, Menu, X,
-  Bell, Search
+  Bell, Search, TrendingUp
 } from 'lucide-react';
 
 const SuperAdminLayout = () => {
@@ -41,6 +41,7 @@ const SuperAdminLayout = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/super-admin' },
     { icon: Building, label: 'Companies', path: '/super-admin/companies' },
     { icon: CreditCard, label: 'Subscriptions', path: '/super-admin/subscriptions' },
+    { icon: TrendingUp, label: 'Revenue', path: '/super-admin/revenue' },
     { icon: Ticket, label: 'Support Tickets', path: '/super-admin/tickets' },
     { icon: Settings, label: 'Settings', path: '/super-admin/settings' },
   ];
@@ -69,7 +70,7 @@ const SuperAdminLayout = () => {
       >
         <div className="p-6 border-b border-slate-700 flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2 text-cyan-400">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-sky-400">
               <Shield className="w-6 h-6" />
               ConstructOS
             </h1>
@@ -89,7 +90,7 @@ const SuperAdminLayout = () => {
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium
                   ${isActive
-                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/50'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }
                 `}
@@ -102,7 +103,7 @@ const SuperAdminLayout = () => {
         </nav>
 
         <div className="p-4 border-t border-slate-700">
-          <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2 text-red-400 hover:bg-slate-800 rounded-lg transition text-sm">
+          <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2 text-red-400 hover:bg-slate-800 rounded-lg transition text-sm font-medium">
             <LogOut size={18} /> Logout
           </button>
         </div>
@@ -144,7 +145,7 @@ const SuperAdminLayout = () => {
                 <div className="text-sm font-medium text-slate-900">{user?.name || 'System Admin'}</div>
                 <div className="text-xs text-slate-500">Root Access</div>
               </div>
-              <div className="w-9 h-9 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 font-bold border-2 border-white shadow-sm">
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
                 SA
               </div>
             </button>
@@ -174,7 +175,7 @@ const SuperAdminLayout = () => {
         </header>
 
         {/* Dynamic Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8 bg-slate-50 scroll-smooth">
+        <main className="flex-1 overflow-auto p-4 md:p-8 bg-white scroll-smooth relative">
           <Outlet />
         </main>
       </div>

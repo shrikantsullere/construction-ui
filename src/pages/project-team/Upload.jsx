@@ -10,6 +10,12 @@ const UploadPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [recentUploads, setRecentUploads] = useState([
+    'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=300',
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=300',
+    'https://images.unsplash.com/photo-1503387762-592dee58c460?q=80&w=300',
+    'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=300'
+  ]);
   const fileInputRef = useRef(null);
 
   const [metadata, setMetadata] = useState({
@@ -38,6 +44,7 @@ const UploadPage = () => {
       if (progress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
+          setRecentUploads([selectedImage, ...recentUploads]);
           setIsUploading(false);
           setShowSuccess(true);
         }, 500);
@@ -67,7 +74,10 @@ const UploadPage = () => {
           >
             Upload Another
           </button>
-          <button className="px-8 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition">
+          <button
+            onClick={() => setShowSuccess(false)}
+            className="px-8 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition"
+          >
             View Gallery
           </button>
         </div>
@@ -112,6 +122,22 @@ const UploadPage = () => {
                   <MapPin size={12} className="text-blue-400" />
                   40.7128° N, 74.0060° W • Verified Location
                 </div>
+
+                {/* Uploading Overlay */}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+                    <div className="w-64 space-y-4">
+                      <h4 className="text-center font-black text-slate-800 uppercase tracking-widest">Syncing to Cloud</h4>
+                      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-600 transition-all duration-300 shadow-[0_0_10px_rgba(37,99,235,0.4)]"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-center text-xs font-bold text-blue-600">{uploadProgress}% Complete</p>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div
@@ -127,22 +153,6 @@ const UploadPage = () => {
                 </p>
                 <div className="mt-8 flex items-center gap-3 px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm shadow-sm group-hover:border-blue-400 transition-colors">
                   <Upload size={18} /> Select File
-                </div>
-              </div>
-            )}
-
-            {/* Uploading Overlay */}
-            {isUploading && (
-              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-20">
-                <div className="w-64 space-y-4">
-                  <h4 className="text-center font-black text-slate-800 uppercase tracking-widest">Syncing to Cloud</h4>
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-600 transition-all duration-300 shadow-[0_0_10px_rgba(37,99,235,0.4)]"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-center text-xs font-bold text-blue-600">{uploadProgress}% Complete</p>
                 </div>
               </div>
             )}
@@ -234,12 +244,7 @@ const UploadPage = () => {
       <div className="space-y-4">
         <h3 className="font-bold text-slate-800 pl-1">Recent Uploads</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=300',
-            'https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=300',
-            'https://images.unsplash.com/photo-1503387762-592dee58c460?q=80&w=300',
-            'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=300'
-          ].map((url, i) => (
+          {recentUploads.map((url, i) => (
             <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 hover:ring-4 ring-blue-50 transition-all cursor-pointer relative group shadow-sm bg-white p-1">
               <img src={url} className="w-full h-full object-cover rounded-xl" alt="Recent" />
               <div className="absolute inset-0 bg-blue-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

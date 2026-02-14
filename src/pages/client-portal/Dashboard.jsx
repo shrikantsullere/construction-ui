@@ -36,12 +36,7 @@ const ClientPortalDashboard = () => {
           <p className="text-slate-500 mt-1 max-w-lg">Everything is on track for <span className="font-bold text-slate-700 underline decoration-blue-500 underline-offset-4">Skyline Tower</span>. Expected handover in 124 days.</p>
         </div>
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition shadow-sm flex items-center gap-2">
-            <Download size={18} /> Export Report
-          </button>
-          <button className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center gap-2">
-            <Calendar size={18} /> Schedule Meeting
-          </button>
+          {/* Actions removed as per request */}
         </div>
       </div>
 

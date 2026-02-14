@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Mail, Phone, MoreHorizontal, Shield, User, X, Save, Trash2, Edit, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Mail, Phone, MoreHorizontal, Shield, User, X, Save, Trash2, Edit, CheckCircle, AlertTriangle, Eye } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
@@ -70,8 +70,10 @@ const Team = () => {
     setIsViewOpen(true);
   };
 
-  const handleEdit = () => {
-    setFormData(selectedMember);
+  const handleEdit = (member) => {
+    const target = member && member.id ? member : selectedMember;
+    setSelectedMember(target);
+    setFormData(target);
     setIsEditOpen(true);
     setIsViewOpen(false);
   };
@@ -81,7 +83,9 @@ const Team = () => {
     setIsEditOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (member) => {
+    const target = member && member.id ? member : selectedMember;
+    setSelectedMember(target);
     setIsDeleteOpen(true);
     setIsViewOpen(false);
   };
@@ -186,7 +190,7 @@ const Team = () => {
           onClick={handleInviteClick}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium shadow-lg shadow-blue-200 transition"
         >
-          <Plus size={18} /> Invite Member
+          <Plus size={18} /> Add Member
         </button>
       </div>
 
@@ -240,7 +244,6 @@ const Team = () => {
                         <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm" />
                         <div>
                           <p className="font-semibold text-slate-900">{member.name}</p>
-                          <p className="text-xs text-slate-500">{member.email}</p>
                         </div>
                       </div>
                     </td>
@@ -263,18 +266,29 @@ const Team = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <a href={`mailto:${member.email}`} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"><Mail size={16} /></a>
-                        <a href={`tel:${member.phone}`} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition"><Phone size={16} /></a>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Mail size={14} className="text-slate-400" />
+                          <span className="text-sm">{member.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Phone size={14} className="text-slate-400" />
+                          <span className="text-sm">{member.phone}</span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleView(member)}
-                        className="text-slate-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded transition"
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleView(member)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="View Details">
+                          <Eye size={18} />
+                        </button>
+                        <button onClick={() => handleEdit(member)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition" title="Edit Member">
+                          <Edit size={18} />
+                        </button>
+                        <button onClick={() => handleDelete(member)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition" title="Delete Member">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -291,7 +305,7 @@ const Team = () => {
       {/* Modals */}
 
       {/* Invite Modal */}
-      <Modal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} title="Invite Team Member">
+      <Modal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} title="Add Team Member">
         <MemberForm data={formData} setData={setFormData} onSubmit={handleSaveInvite} submitLabel="Send Invitation" />
       </Modal>
 

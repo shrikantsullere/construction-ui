@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Calendar, MapPin, Eye, Edit, Trash2, X, Save, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, MapPin, Eye, Edit, Trash2, X, Save, AlertTriangle, Upload } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
@@ -33,11 +33,17 @@ const Projects = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [formData, setFormData] = useState({
     name: '', location: '', value: '', status: 'Planning', progress: 0, due: '', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800'
   });
+
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Handlers
   const handleCreate = () => {
@@ -77,84 +83,117 @@ const Projects = () => {
     setIsDeleteOpen(false);
   };
 
-  const ProjectForm = ({ data, setData, onSubmit, submitLabel }) => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
-        <input
-          type="text"
-          value={data.name}
-          onChange={e => setData({ ...data, name: e.target.value })}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          placeholder="e.g. Sunrise Apartments"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
+  const ProjectForm = ({ data, setData, onSubmit, submitLabel }) => {
+    const handleImageUpload = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setData({ ...data, image: reader.result });
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    return (
+      <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-          <input
-            type="text"
-            value={data.location}
-            onChange={e => setData({ ...data, location: e.target.value })}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-            placeholder="City, State"
-          />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Project Image</label>
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            {data.image && !data.image.includes('unsplash') ? (
+              <img src={data.image} alt="Preview" className="h-32 w-full object-cover rounded-md mb-2" />
+            ) : (
+              <div className="flex flex-col items-center text-slate-400 pointer-events-none">
+                <Upload size={32} className="mb-2" />
+                <span className="text-sm font-medium">Click to upload image</span>
+              </div>
+            )}
+            {data.image && <p className="text-xs text-green-600 mt-2 font-medium">Image selected</p>}
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Value</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
           <input
             type="text"
-            value={data.value}
-            onChange={e => setData({ ...data, value: e.target.value })}
+            value={data.name}
+            onChange={e => setData({ ...data, name: e.target.value })}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-            placeholder="$0.0M"
+            placeholder="e.g. Sunrise Apartments"
           />
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+            <input
+              type="text"
+              value={data.location}
+              onChange={e => setData({ ...data, location: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+              placeholder="City, State"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Value</label>
+            <input
+              type="text"
+              value={data.value}
+              onChange={e => setData({ ...data, value: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+              placeholder="$0.0M"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+            <select
+              value={data.status}
+              onChange={e => setData({ ...data, status: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+            >
+              <option>Planning</option>
+              <option>In Progress</option>
+              <option>On Hold</option>
+              <option>Completed</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
+            <input
+              type="date"
+              value={data.due}
+              onChange={e => setData({ ...data, due: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+            />
+          </div>
+        </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-          <select
-            value={data.status}
-            onChange={e => setData({ ...data, status: e.target.value })}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
+          <label className="block text-sm font-medium text-slate-700 mb-1">Progress ({data.progress}%)</label>
+          <input
+            type="range"
+            min="0" max="100"
+            value={data.progress}
+            onChange={e => setData({ ...data, progress: parseInt(e.target.value) })}
+            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+        <div className="flex justify-end pt-4">
+          <button
+            onClick={onSubmit}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-200 flex items-center gap-2"
           >
-            <option>Planning</option>
-            <option>In Progress</option>
-            <option>On Hold</option>
-            <option>Completed</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
-          <input
-            type="date"
-            value={data.due}
-            onChange={e => setData({ ...data, due: e.target.value })}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition"
-          />
+            <Save size={18} /> {submitLabel}
+          </button>
         </div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Progress ({data.progress}%)</label>
-        <input
-          type="range"
-          min="0" max="100"
-          value={data.progress}
-          onChange={e => setData({ ...data, progress: parseInt(e.target.value) })}
-          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-        />
-      </div>
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={onSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-200 flex items-center gap-2"
-        >
-          <Save size={18} /> {submitLabel}
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -178,6 +217,8 @@ const Projects = () => {
           <input
             type="text"
             placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
         </div>
@@ -205,7 +246,7 @@ const Projects = () => {
       {/* Grid View */}
       {view === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <div key={project.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition group">
               <div className="h-48 overflow-hidden relative">
                 <img
@@ -280,7 +321,7 @@ const Projects = () => {
               </tr>
             </thead>
             <tbody>
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <tr key={project.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-medium text-slate-900">{project.name}</td>
                   <td className="px-6 py-4">{project.location}</td>

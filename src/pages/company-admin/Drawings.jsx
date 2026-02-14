@@ -61,9 +61,10 @@ const Drawings = () => {
       name: formData.name || 'New Drawing',
       version: formData.version,
       date: new Date().toISOString().split('T')[0],
-      size: (Math.random() * 5 + 1).toFixed(1) + ' MB', // Mock size
+      size: formData.file ? (formData.file.size / (1024 * 1024)).toFixed(1) + ' MB' : '0.0 MB',
       status: formData.status,
-      discipline: formData.discipline
+      discipline: formData.discipline,
+      fileUrl: formData.file ? URL.createObjectURL(formData.file) : null
     };
     setDrawings([newDrawing, ...drawings]);
     setIsUploadOpen(false);
@@ -84,8 +85,17 @@ const Drawings = () => {
     setIsDeleteOpen(false);
   };
 
-  const handleDownload = (name) => {
-    alert(`Downloading ${name}...`);
+  const handleDownload = (drawing) => {
+    if (drawing.fileUrl) {
+      const link = document.createElement('a');
+      link.href = drawing.fileUrl;
+      link.download = drawing.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert(`Downloading ${drawing.name}... (Dummy Simulation)`);
+    }
   };
 
   return (
@@ -174,7 +184,7 @@ const Drawings = () => {
                         <button onClick={() => handleView(drawing)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="View Details">
                           <Eye size={18} />
                         </button>
-                        <button onClick={() => handleDownload(drawing.name)} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition" title="Download">
+                        <button onClick={() => handleDownload(drawing)} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition" title="Download">
                           <Download size={18} />
                         </button>
                         <button onClick={() => handleDelete(drawing)} className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition" title="Delete">
@@ -201,10 +211,30 @@ const Drawings = () => {
       {/* Upload Modal */}
       <Modal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} title="Upload New Revision">
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+          <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer relative">
+            <input
+              type="file"
+              accept=".pdf,.dwg,.dxf"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setFormData({ ...formData, file: file, name: file.name });
+                }
+              }}
+            />
             <Upload className="mx-auto text-slate-400 mb-2" size={32} />
-            <p className="text-sm font-medium text-slate-600">Click to upload or drag and drop</p>
-            <p className="text-xs text-slate-400">PDF, DWG, DXF up to 50MB</p>
+            {formData.file ? (
+              <div>
+                <p className="text-sm font-bold text-blue-600 truncate px-4">{formData.file.name}</p>
+                <p className="text-xs text-slate-500">{(formData.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-slate-600">Click to upload or drag and drop</p>
+                <p className="text-xs text-slate-400">PDF, DWG, DXF up to 50MB</p>
+              </>
+            )}
           </div>
 
           <div>
@@ -304,7 +334,7 @@ const Drawings = () => {
             </div>
 
             <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button onClick={() => handleDownload(selectedDrawing.name)} className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium flex justify-center items-center gap-2">
+              <button onClick={() => handleDownload(selectedDrawing)} className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium flex justify-center items-center gap-2">
                 <Download size={18} /> Download
               </button>
               <button onClick={() => setIsViewOpen(false)} className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg hover:bg-slate-200 transition font-medium">
