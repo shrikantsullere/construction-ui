@@ -2,13 +2,36 @@ import { useState } from 'react';
 import {
     Search, Filter, CheckCircle2, Clock,
     AlertCircle, ChevronRight, MessageSquare,
-    MoreHorizontal, Calendar, Tag
+    MoreHorizontal, Calendar, Tag, X
 } from 'lucide-react';
+
+const Modal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 className="font-bold text-slate-800">{title}</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition">
+                        <X size={20} />
+                    </button>
+                </div>
+                <div className="p-6">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const Tasks = () => {
     const [filter, setFilter] = useState('All');
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-    const tasks = [
+    const [taskList, setTaskList] = useState([
         {
             id: 1,
             title: 'Inspect Reinforcement Section B',
@@ -45,7 +68,7 @@ const Tasks = () => {
             location: 'Exterior Scaffold',
             category: 'Safety'
         },
-    ];
+    ]);
 
     const getPriorityColor = (p) => {
         switch (p) {
@@ -61,6 +84,42 @@ const Tasks = () => {
             case 'In Progress': return <Clock size={18} className="text-blue-500" />;
             default: return <AlertCircle size={18} className="text-slate-400" />;
         }
+    };
+
+    const handleChat = (e, task) => {
+        e.stopPropagation();
+        setSelectedTask(task);
+        setIsChatOpen(true);
+    };
+
+    const handleMenu = (e, task) => {
+        e.stopPropagation();
+        setSelectedTask(task);
+        setIsMenuOpen(true);
+    };
+
+    const handleDetails = (e, task) => {
+        e.stopPropagation();
+        setSelectedTask(task);
+        setIsDetailsOpen(true);
+    };
+
+    // Modal Actions
+    const handleEditTask = () => {
+        alert(`Editing task: ${selectedTask.title}`);
+        setIsMenuOpen(false);
+    };
+
+    const handleCompleteTask = () => {
+        setTaskList(taskList.map(t =>
+            t.id === selectedTask.id ? { ...t, status: 'Completed' } : t
+        ));
+        setIsMenuOpen(false);
+    };
+
+    const handleDeleteTask = () => {
+        setTaskList(taskList.filter(t => t.id !== selectedTask.id));
+        setIsMenuOpen(false);
     };
 
     return (
@@ -94,9 +153,10 @@ const Tasks = () => {
 
             {/* Task List */}
             <div className="grid grid-cols-1 gap-4">
-                {tasks.map((task) => (
+                {taskList.map((task) => (
                     <div
                         key={task.id}
+                        onClick={(e) => handleDetails(e, task)}
                         className="group bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-pointer relative overflow-hidden"
                     >
                         {/* Hover bar */}
@@ -133,13 +193,27 @@ const Tasks = () => {
                                     <p className="text-xs font-semibold text-slate-700">{task.location}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition">
+                                    <button
+                                        onClick={(e) => handleChat(e, task)}
+                                        className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition"
+                                        title="Chat"
+                                    >
                                         <MessageSquare size={18} />
                                     </button>
-                                    <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition">
+                                    <button
+                                        onClick={(e) => handleMenu(e, task)}
+                                        className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition"
+                                        title="Options"
+                                    >
                                         <MoreHorizontal size={18} />
                                     </button>
-                                    <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                                    <button
+                                        onClick={(e) => handleDetails(e, task)}
+                                        className="p-2 text-slate-300 group-hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                                        title="View Details"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -148,26 +222,99 @@ const Tasks = () => {
             </div>
 
             {/* Stats Footer */}
-            <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-wrap gap-8 items-center justify-around md:justify-start">
+            <div className="bg-white rounded-2xl p-6 text-slate-800 shadow-xl border border-slate-100 flex flex-wrap gap-8 items-center justify-around md:justify-start">
                 <div>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">My Performance</p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">My Performance</p>
                     <div className="flex items-center gap-3">
-                        <span className="text-2xl font-black">92%</span>
-                        <div className="w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
-                            <div className="bg-blue-500 h-full w-[92%]"></div>
+                        <span className="text-2xl font-black text-slate-800">92%</span>
+                        <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="bg-blue-600 h-full w-[92%]"></div>
                         </div>
                     </div>
                 </div>
-                <div className="h-10 w-px bg-slate-800 hidden md:block"></div>
+                <div className="h-10 w-px bg-slate-200 hidden md:block"></div>
                 <div className="text-center md:text-left">
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Completed</p>
-                    <p className="text-2xl font-black text-emerald-400">24 <span className="text-sm text-slate-500 font-medium">this week</span></p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Completed</p>
+                    <p className="text-2xl font-black text-emerald-500">24 <span className="text-sm text-slate-400 font-medium">this week</span></p>
                 </div>
                 <div className="text-center md:text-left">
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Overdue</p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Overdue</p>
                     <p className="text-2xl font-black text-red-500">1</p>
                 </div>
             </div>
+
+            {/* Chat Modal */}
+            <Modal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} title={`Chat: ${selectedTask?.title}`}>
+                <div className="space-y-4">
+                    <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600">
+                        <p className="font-bold text-slate-800 mb-1">System:</p>
+                        <p>Chat started for task #{selectedTask?.id}.</p>
+                    </div>
+                    <div className="h-40 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 text-sm">
+                        No messages yet.
+                    </div>
+                    <input type="text" placeholder="Type a message..." className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                </div>
+            </Modal>
+
+            {/* Menu Modal */}
+            <Modal isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} title="Task Options">
+                <div className="space-y-2">
+                    <button
+                        onClick={handleEditTask}
+                        className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 transition"
+                    >
+                        Edit Task
+                    </button>
+                    <button
+                        onClick={handleCompleteTask}
+                        className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 transition"
+                    >
+                        Mark as Completed
+                    </button>
+                    <button
+                        onClick={handleDeleteTask}
+                        className="w-full text-left px-4 py-3 bg-red-50 hover:bg-red-100 rounded-lg text-sm font-medium text-red-600 transition"
+                    >
+                        Delete Task
+                    </button>
+                </div>
+            </Modal>
+
+            {/* Details Modal */}
+            <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Task Details">
+                {selectedTask && (
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase">Title</p>
+                            <p className="font-semibold text-slate-800">{selectedTask.title}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs font-bold text-slate-500 uppercase">Status</p>
+                                <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full border font-bold ${getPriorityColor(selectedTask.priority)}`}>
+                                    {selectedTask.priority}
+                                </span>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-slate-500 uppercase">Due Date</p>
+                                <p className="text-sm font-medium text-slate-700">{selectedTask.dueDate}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase">Location</p>
+                            <p className="text-sm font-medium text-slate-700">{selectedTask.location}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase">Category</p>
+                            <p className="text-sm font-medium text-slate-700">{selectedTask.category}</p>
+                        </div>
+                        <button onClick={() => setIsDetailsOpen(false)} className="w-full bg-blue-600 text-white rounded-lg py-2 font-medium hover:bg-blue-700 transition">
+                            Close
+                        </button>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };

@@ -1,11 +1,12 @@
-import { Save, Lock } from 'lucide-react';
+import { Save, Lock, Camera } from 'lucide-react';
 import { useState } from 'react';
 
 const Settings = () => {
   const [profile, setProfile] = useState({
     name: 'John Doe',
     email: 'john@constructos.com',
-    role: 'Company Owner'
+    role: 'Company Owner',
+    avatar: null
   });
   const [password, setPassword] = useState({
     current: '',
@@ -28,6 +29,17 @@ const Settings = () => {
     setPassword({ current: '', new: '', confirm: '' });
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile({ ...profile, avatar: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
@@ -39,6 +51,26 @@ const Settings = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Personal Details</h3>
           <form onSubmit={handleProfileSave} className="space-y-4">
+            <div className="flex items-center gap-6 mb-6">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold text-blue-600 overflow-hidden border-4 border-slate-50">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    profile.name.split(' ').map(n => n[0]).join('')
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border border-slate-100 text-blue-600 hover:scale-110 transition cursor-pointer">
+                  <Camera size={16} />
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                </label>
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-800 text-lg">{profile.name}</h4>
+                <p className="text-slate-500 text-sm">{profile.role}</p>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Display Name</label>

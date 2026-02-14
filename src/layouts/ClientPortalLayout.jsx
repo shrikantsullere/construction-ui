@@ -44,6 +44,7 @@ const ClientPortalLayout = () => {
     { icon: FileCheck, label: 'Approvals', path: '/client-portal/approvals' },
     { icon: DollarSign, label: 'Invoices', path: '/client-portal/invoices' },
     { icon: MessageCircle, label: 'Messages', path: '/client-portal/messages' },
+    { icon: User, label: 'My Profile', path: '/client-portal/profile' },
   ];
 
   const getHeaderTitle = () => {

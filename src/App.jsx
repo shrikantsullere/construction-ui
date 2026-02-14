@@ -11,6 +11,7 @@ import ComingSoon from './components/ComingSoon';
 import SuperAdminDashboard from './pages/super-admin/Dashboard';
 import SuperAdminCompanies from './pages/super-admin/Companies';
 import SuperAdminSubscriptions from './pages/super-admin/Subscriptions';
+import SuperAdminRevenue from './pages/super-admin/Revenue';
 import SuperAdminTickets from './pages/super-admin/SupportTickets';
 import SuperAdminSettings from './pages/super-admin/Settings';
 
@@ -25,12 +26,19 @@ import Issues from './pages/company-admin/Issues';
 import Estimates from './pages/company-admin/Estimates';
 import Chat from './pages/company-admin/Chat';
 import Settings from './pages/company-admin/Settings';
+
 import ProjectTeamHome from './pages/project-team/Home';
 import UploadPage from './pages/project-team/Upload';
 import TasksPage from './pages/project-team/Tasks';
 import ProjectTeamChat from './pages/project-team/Chat';
 import ProjectTeamProfile from './pages/project-team/Profile';
+
 import ClientPortalDashboard from './pages/client-portal/Dashboard';
+import ClientTimeline from './pages/client-portal/Timeline';
+import ClientPhotos from './pages/client-portal/Photos';
+import ClientApprovals from './pages/client-portal/Approvals';
+import ClientInvoices from './pages/client-portal/Invoices';
+import ClientMessages from './pages/client-portal/Messages';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -62,6 +70,7 @@ function App() {
         <Route index element={<SuperAdminDashboard />} />
         <Route path="companies" element={<SuperAdminCompanies />} />
         <Route path="subscriptions" element={<SuperAdminSubscriptions />} />
+        <Route path="revenue" element={<SuperAdminRevenue />} />
         <Route path="tickets" element={<SuperAdminTickets />} />
         <Route path="settings" element={<SuperAdminSettings />} />
         <Route path="*" element={<ComingSoon title="Super Admin Module" />} />
@@ -119,12 +128,12 @@ function App() {
         }
       >
         <Route index element={<ClientPortalDashboard />} />
-
-        <Route path="timeline" element={<ComingSoon title="Project Timeline" description="View the progress of your project." />} />
-        <Route path="photos" element={<ComingSoon title="Project Photos" description="See the latest photos from the construction site." />} />
-        <Route path="approvals" element={<ComingSoon title="Pending Approvals" description="Review and approve important project items." />} />
-        <Route path="invoices" element={<ComingSoon title="Invoices" description="View and pay your project invoices." />} />
-        <Route path="messages" element={<ComingSoon title="Messages" description="Communicate with the project team." />} />
+        <Route path="timeline" element={<ClientTimeline />} />
+        <Route path="photos" element={<ClientPhotos />} />
+        <Route path="approvals" element={<ClientApprovals />} />
+        <Route path="invoices" element={<ClientInvoices />} />
+        <Route path="messages" element={<ClientMessages />} />
+        <Route path="profile" element={<ProjectTeamProfile />} />
       </Route>
 
     </Routes>
